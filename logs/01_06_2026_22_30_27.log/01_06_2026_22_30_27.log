@@ -1,0 +1,9 @@
+[ 2026-01-06 22:30:27,118 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-06 22:30:27,152 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-06 22:30:27,156 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-06 22:30:38,814 ] 97 werkzeug - INFO - 127.0.0.1 - - [06/Jan/2026 22:30:38] "GET / HTTP/1.1" 200 -
+[ 2026-01-06 22:30:39,071 ] 97 werkzeug - INFO - 127.0.0.1 - - [06/Jan/2026 22:30:39] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+[ 2026-01-06 22:30:46,453 ] 33 root - INFO - File Churn_Modelling.csv stored in GridFS
+[ 2026-01-06 22:30:46,455 ] 97 werkzeug - INFO - 127.0.0.1 - - [06/Jan/2026 22:30:46] "[32mPOST / HTTP/1.1[0m" 302 -
+[ 2026-01-06 22:30:46,589 ] 97 werkzeug - INFO - 127.0.0.1 - - [06/Jan/2026 22:30:46] "GET / HTTP/1.1" 200 -
+[ 2026-01-06 22:30:46,618 ] 97 werkzeug - INFO - 127.0.0.1 - - [06/Jan/2026 22:30:46] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -

@@ -1,0 +1,23 @@
+[ 2026-01-08 13:15:29,448 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-08 13:15:29,479 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-08 13:15:29,485 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-08 13:15:43,418 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:15:43] "GET / HTTP/1.1" 200 -
+[ 2026-01-08 13:15:46,156 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:15:46] "GET /?filename=netflix_titles.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:15:48,712 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:15:48,837 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:15:48,884 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:15:49,005 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:15:49,065 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:15:49] "GET /info?filename=netflix_titles.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:15:49,208 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:15:49] "GET /static/css/styles.css HTTP/1.1" 200 -
+[ 2026-01-08 13:46:08,212 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:46:08,293 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:08,320 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:46:08,387 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:08,406 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:08] "GET /info?filename=netflix_titles.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:46:14,112 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:14] "GET / HTTP/1.1" 200 -
+[ 2026-01-08 13:46:18,838 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:18] "GET /?filename=Churn_Modelling.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:46:20,804 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:46:20,826 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:20,857 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:46:20,875 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:20,881 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:20] "GET /info?filename=Churn_Modelling.csv HTTP/1.1" 200 -

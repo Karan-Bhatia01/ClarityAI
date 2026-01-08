@@ -1,0 +1,9 @@
+[ 2026-01-08 13:10:37,058 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-08 13:10:37,094 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-08 13:10:37,099 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-08 13:11:00,702 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:11:00] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[ 2026-01-08 13:11:01,050 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:11:01] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+[ 2026-01-08 13:11:01,098 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:11:01] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+[ 2026-01-08 13:11:01,505 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:11:01] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=2hyOAETOEJO4IjIw0MOI HTTP/1.1" 200 -
+[ 2026-01-08 13:11:01,773 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:11:01] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+[ 2026-01-08 13:12:05,008 ] 97 werkzeug - INFO -  * Detected change in 'C:\\Users\\bhati\\OneDrive\\Desktop\\clarityAI\\app.py', reloading

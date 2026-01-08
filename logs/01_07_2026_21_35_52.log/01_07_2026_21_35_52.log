@@ -1,0 +1,17 @@
+[ 2026-01-07 21:35:52,098 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-07 21:35:52,129 ] 97 werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[ 2026-01-07 21:35:52,129 ] 97 werkzeug - INFO - [33mPress CTRL+C to quit[0m
+[ 2026-01-07 21:35:52,130 ] 97 werkzeug - INFO -  * Restarting with stat
+[ 2026-01-07 21:35:52,844 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-07 21:35:52,861 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-07 21:35:52,926 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-07 21:36:03,746 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:36:03] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[ 2026-01-07 21:36:03,821 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:36:03] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+[ 2026-01-07 21:36:03,899 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:36:03] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+[ 2026-01-07 21:36:04,266 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:36:04] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=mIGc1Jnr6kZIebYdpD0S HTTP/1.1" 200 -
+[ 2026-01-07 21:36:04,526 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:36:04] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+[ 2026-01-07 21:37:09,114 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:37:09] "GET / HTTP/1.1" 200 -
+[ 2026-01-07 21:37:09,133 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:37:09] "GET /static/css/styles.css HTTP/1.1" 200 -
+[ 2026-01-07 21:37:09,329 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:37:09] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[ 2026-01-07 21:37:12,005 ] 97 werkzeug - INFO - 127.0.0.1 - - [07/Jan/2026 21:37:12] "GET /preprocessing HTTP/1.1" 200 -

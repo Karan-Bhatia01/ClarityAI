@@ -1,0 +1,3 @@
+[ 2026-01-06 22:32:05,989 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-06 22:32:06,044 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-06 22:32:06,051 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385

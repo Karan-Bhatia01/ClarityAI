@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Information</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/info.css') }}">
+</head>
+<body>
+
+    <h1>Dataset Overview</h1>
+
+    <h2>Shape</h2>
+    <p>Rows: {{ analysis.shape[0] }} | Columns: {{ analysis.shape[1] }}</p>
+
+    <h2>Columns</h2>
+    <ul>
+        {% for col in analysis.columns %}
+            <li>{{ col }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Null Values</h2>
+    <table border="1">
+        <tr>
+            <th>Column</th>
+            <th>Null Count</th>
+        </tr>
+        {% for col, count in analysis.null_values.items() %}
+        <tr>
+            <td>{{ col }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Duplicate Rows</h2>
+    <p>{{ analysis.duplicate_rows }}</p>
+
+    <h2>Numeric Columns</h2>
+    <ul>
+        {% for col in analysis.numeric_columns %}
+            <li>{{ col }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Categorical Columns</h2>
+    <ul>
+        {% for col in analysis.categorical_columns %}
+            <li>{{ col }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Unique Values</h2>
+    {% for col, values in unique.items() %}
+        <h4>{{ col }}</h4>
+        <p>{{ values }}</p>
+    {% endfor %}
+
+</body>
+</html>

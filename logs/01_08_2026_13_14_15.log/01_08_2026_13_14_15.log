@@ -1,0 +1,20 @@
+[ 2026-01-08 13:14:15,432 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-08 13:14:15,544 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-08 13:14:15,565 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-08 13:14:16,390 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:14:16,650 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:14:16,740 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:14:16,966 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:14:17,063 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:17] "[35m[1mGET /info?filename=netflix_titles.csv HTTP/1.1[0m" 500 -
+[ 2026-01-08 13:14:18,026 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:18] "GET / HTTP/1.1" 200 -
+[ 2026-01-08 13:14:21,473 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:21] "GET /?filename=netflix_titles.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:14:23,974 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:14:24,190 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:14:24,255 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:14:24,449 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:14:24,521 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:24] "[35m[1mGET /info?filename=netflix_titles.csv HTTP/1.1[0m" 500 -
+[ 2026-01-08 13:14:24,647 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:24] "[36mGET /info?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+[ 2026-01-08 13:14:24,851 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:24] "[36mGET /info?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+[ 2026-01-08 13:14:25,171 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:25] "GET /info?__debugger__=yes&cmd=resource&f=console.png&s=lmCEj3bmVlw5Ws5WCGNK HTTP/1.1" 200 -
+[ 2026-01-08 13:14:25,435 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:14:25] "[36mGET /info?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+[ 2026-01-08 13:15:18,451 ] 97 werkzeug - INFO -  * Detected change in 'C:\\Users\\bhati\\OneDrive\\Desktop\\clarityAI\\app.py', reloading

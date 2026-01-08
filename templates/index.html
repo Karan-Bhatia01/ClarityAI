@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Preview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+</head>
+<body>
+
+<h2>Upload CSV</h2>
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv">
+    <button type="submit">Upload</button>
+</form>
+
+<h2>Select Dataset</h2>
+<form method="GET">
+    <select name="filename" onchange="this.form.submit()">
+        <option value="">-- Select file --</option>
+        {% for f in filenames %}
+            <option value="{{ f }}" {% if f == selected_filename %}selected{% endif %}>
+                {{ f }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if preview_data %}
+<h3>First 5 Rows</h3>
+<table border="1">
+    <tr>
+        {% for col in columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in preview_data %}
+    <tr>
+        {% for cell in row %}
+        <td>{{ cell }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
+<form action="{{ url_for('info_layer') }}" method="GET">
+    <input type="hidden" name="filename" value="{{ selected_filename }}">
+    <button type="submit">Next Page</button>
+</form>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+[ 2026-01-08 13:46:35,773 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-08 13:46:35,802 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-08 13:46:35,809 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-08 13:46:40,760 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:40] "GET / HTTP/1.1" 200 -
+[ 2026-01-08 13:46:43,522 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:43] "GET /?filename=Churn_Modelling.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:46:45,887 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:46:45,931 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:45,971 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:46:45,993 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:46,006 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:46] "GET /info?filename=Churn_Modelling.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:46:51,593 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:51] "GET /?filename=netflix_titles.csv HTTP/1.1" 200 -
+[ 2026-01-08 13:46:53,486 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 13:46:53,568 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:53,589 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 13:46:53,652 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 13:46:53,664 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 13:46:53] "GET /info?filename=netflix_titles.csv HTTP/1.1" 200 -

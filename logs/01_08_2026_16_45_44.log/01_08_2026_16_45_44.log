@@ -1,0 +1,16 @@
+[ 2026-01-08 16:45:44,049 ] 19 root - INFO - MongoDB GridFS connection established
+[ 2026-01-08 16:45:44,066 ] 97 werkzeug - WARNING -  * Debugger is active!
+[ 2026-01-08 16:45:44,069 ] 97 werkzeug - INFO -  * Debugger PIN: 886-695-385
+[ 2026-01-08 16:45:48,202 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:48] "GET / HTTP/1.1" 200 -
+[ 2026-01-08 16:45:48,317 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:48] "GET /static/css/styles.css HTTP/1.1" 200 -
+[ 2026-01-08 16:45:48,530 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:48] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[ 2026-01-08 16:45:54,135 ] 33 root - INFO - File stud.csv stored in GridFS
+[ 2026-01-08 16:45:54,135 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:54] "[32mPOST / HTTP/1.1[0m" 302 -
+[ 2026-01-08 16:45:54,426 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:54] "GET /?filename=stud.csv HTTP/1.1" 200 -
+[ 2026-01-08 16:45:54,752 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:45:54] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+[ 2026-01-08 16:46:01,616 ] 21 root - INFO - MongoDB connection established in DataPreprocessing.
+[ 2026-01-08 16:46:01,648 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 16:46:01,688 ] 66 root - INFO - Dataset analysis completed.
+[ 2026-01-08 16:46:01,694 ] 43 root - INFO - Dataset successfully loaded into DataFrame.
+[ 2026-01-08 16:46:01,720 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:46:01] "GET /info?filename=stud.csv HTTP/1.1" 200 -
+[ 2026-01-08 16:46:01,917 ] 97 werkzeug - INFO - 127.0.0.1 - - [08/Jan/2026 16:46:01] "GET /static/css/info.css HTTP/1.1" 200 -
