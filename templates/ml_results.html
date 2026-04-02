@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Results — {{ filename }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+</head>
+<body>
+<header class="page-header">
+    <h1>📈 ML Pipeline Results</h1>
+    <div class="meta">
+        <span class="filename-badge">{{ filename }}</span>
+        <span class="shape-badge">{{ problem_type | capitalize }}</span>
+        <span class="shape-badge">Target: {{ target_column }}</span>
+    </div>
+</header>
+
+<div class="page-body">
+
+    <!-- Feature Engineering Plan -->
+    <section class="section animate-in">
+        <p class="section-label">⚙️ LLM Feature Engineering Plan</p>
+        
+        {% if feature_plan.reasoning %}
+        <div style="padding: var(--space-4); background-color: var(--bg-tertiary); border-left: 3px solid var(--accent-primary); border-radius: var(--radius-md); margin-bottom: var(--space-6);">
+            <strong style="color: var(--accent-primary);">Reasoning:</strong>
+            <p style="margin-top: var(--space-2); color: var(--fg-secondary); font-size: var(--font-size-sm);">{{ feature_plan.reasoning }}</p>
+        </div>
+        {% endif %}
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-4);">
+            {% if feature_plan.drop %}
+            <div class="card">
+                <h4 style="color: var(--accent-destructive); margin-top: 0;">❌ Dropped Features</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {% for c in feature_plan.drop %}
+                        <span class="badge badge-secondary" style="background-color: rgba(239, 68, 68, 0.1); color: var(--accent-destructive);">{{ c }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if feature_plan.numeric %}
+            <div class="card">
+                <h4 style="color: var(--accent-secondary); margin-top: 0;">📊 Scaled Numeric</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {% for c in feature_plan.numeric %}
+                        <span class="badge" style="background-color: var(--accent-secondary);">{{ c }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if feature_plan.onehot %}
+            <div class="card">
+                <h4 style="color: var(--accent-primary); margin-top: 0;">🏷️ One-Hot Encoded</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {% for c in feature_plan.onehot %}
+                        <span class="badge">{{ c }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if feature_plan.ordinal %}
+            <div class="card">
+                <h4 style="color: var(--accent-warning); margin-top: 0;">🔢 Ordinal Encoded</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {% for c in feature_plan.ordinal %}
+                        <span class="badge badge-secondary" style="border: 1px solid var(--accent-warning);">{{ c }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Model Comparison -->
+    <section class="section animate-in">
+        <p class="section-label">🏆 Model Comparison</p>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        {% if problem_type == "classification" %}
+                            <th>Accuracy</th><th>F1 Score</th>
+                            <th>Precision</th><th>Recall</th>
+                            <th>ROC-AUC</th>
+                        {% else %}
+                            <th>R² Score</th><th>RMSE</th><th>MAE</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model_name, data in results.items() %}
+                    <tr style="{% if model_name == best_model %}background-color: rgba(79, 70, 229, 0.1);{% endif %}">
+                        <td>
+                            <strong>{{ model_name }}</strong>
+                            {% if model_name == best_model %}
+                                <span class="badge" style="margin-left: var(--space-2);">⭐ Best</span>
+                            {% endif %}
+                        </td>
+                        {% if problem_type == "classification" %}
+                            <td><strong style="color: var(--accent-primary);">{{ "%.4f" | format(data.metrics.accuracy) }}</strong></td>
+                            <td>{{ "%.4f" | format(data.metrics.f1) }}</td>
+                            <td>{{ "%.4f" | format(data.metrics.precision) }}</td>
+                            <td>{{ "%.4f" | format(data.metrics.recall) }}</td>
+                            <td>{{ "%.4f" | format(data.metrics.roc_auc) if data.metrics.roc_auc else "—" }}</td>
+                        {% else %}
+                            <td><strong style="color: var(--accent-primary);">{{ "%.4f" | format(data.metrics.r2) }}</strong></td>
+                            <td>{{ "%.4f" | format(data.metrics.rmse) }}</td>
+                            <td>{{ "%.4f" | format(data.metrics.mae) }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Best Model Details -->
+    {% set best = results[best_model] %}
+    <section class="section animate-in">
+        <p class="section-label">🎯 Best Model — {{ best_model }}</p>
+
+        <!-- Confusion Matrix -->
+        {% if best.metrics.confusion_matrix %}
+        <div style="margin-bottom: var(--space-8);">
+            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);">Confusion Matrix</h3>
+            <div class="tbl-wrap">
+                <table style="max-width: 400px;">
+                    <tbody>
+                        {% for row in best.metrics.confusion_matrix %}
+                        {% set row_idx = loop.index0 %}
+                        <tr>
+                            {% for cell in row %}
+                            <td style="text-align: center; font-weight: 600; background-color: {% if loop.index0 == row_idx %}rgba(16, 185, 129, 0.1){% else %}rgba(239, 68, 68, 0.05){% endif %};">
+                                {{ cell }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Feature Importance -->
+        {% if best.feature_importance %}
+        <div>
+            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);">📊 Top Feature Importance</h3>
+            <div style="display: grid; gap: var(--space-4);">
+                {% set max_val = best.feature_importance.values() | list | max | abs %}
+                {% for feat, val in best.feature_importance.items() | list | sort(reverse=true, attribute='1') | list %}
+                {% if loop.index <= 10 %}
+                <div class="feature-bar">
+                    <div class="feature-bar-label">
+                        <span>{{ feat }}</span>
+                        <span style="color: var(--accent-primary); font-weight: 600;">{{ "%.4f" | format(val) }}</span>
+                    </div>
+                    <div class="feature-bar-track">
+                        <div class="feature-bar-fill" style="width: {{ ((val | abs) / max_val * 100) | round }}%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Summary -->
+    <div style="text-align: center; padding: var(--space-8); background-color: var(--bg-secondary); border-radius: var(--radius-lg); margin-top: var(--space-8);">
+        <p style="color: var(--fg-secondary); font-size: var(--font-size-sm); margin: 0;">All models and results saved to MongoDB</p>
+        <p style="color: var(--fg-muted); font-size: var(--font-size-xs); margin-top: var(--space-2);">Document ID: <code>{{ mongo_doc_id }}</code></p>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
+</body>
+</html>

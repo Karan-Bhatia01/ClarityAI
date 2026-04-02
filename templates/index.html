@@ -2,52 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CSV Preview</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClarityAI — Data Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
 </head>
 <body>
 
-<h2>Upload CSV</h2>
-<form method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv">
-    <button type="submit">Upload</button>
-</form>
+<header class="page-header">
+    <h1>📊 ClarityAI</h1>
+    <p class="hint-text">Intelligent CSV Analysis Platform with AI Insights</p>
+</header>
 
-<h2>Select Dataset</h2>
-<form method="GET">
-    <select name="filename" onchange="this.form.submit()">
-        <option value="">-- Select file --</option>
-        {% for f in filenames %}
-            <option value="{{ f }}" {% if f == selected_filename %}selected{% endif %}>
-                {{ f }}
-            </option>
-        {% endfor %}
-    </select>
-</form>
+<div class="page-body">
+    <!-- Upload Section -->
+    <section class="section">
+        <p class="section-label">Upload Dataset</p>
+        <form method="POST" enctype="multipart/form-data" class="form-group">
+            <div class="field-row">
+                <label for="file-input">Select CSV File</label>
+                <input type="file" id="file-input" name="file" accept=".csv" required style="padding: var(--space-4); cursor: pointer;">
+            </div>
+            <p class="hint-text">Supported: CSV files up to 50MB. Formats: .csv</p>
+            <button type="submit" class="btn btn-primary btn-lg btn-full">Upload &amp; Explore →</button>
+        </form>
+    </section>
 
-{% if preview_data %}
-<h3>First 5 Rows</h3>
-<table border="1">
-    <tr>
-        {% for col in columns %}
-        <th>{{ col }}</th>
-        {% endfor %}
-    </tr>
-    {% for row in preview_data %}
-    <tr>
-        {% for cell in row %}
-        <td>{{ cell }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
+    <!-- Datasets List -->
+    {% if filenames %}
+    <section class="section">
+        <div class="flex justify-between items-center">
+            <p class="section-label" style="margin-bottom: 0;">Your Datasets</p>
+            <span class="badge">{{ filenames|length }} files</span>
+        </div>
+        <p class="hint-text">Click a dataset to explore and analyze</p>
+        
+        <div class="card-grid">
+            {% for filename in filenames %}
+            <div class="card-item">
+                <h4>{{ filename }}</h4>
+                <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-4);">
+                    <a href="{{ url_for('info_layer', filename=filename) }}" class="btn btn-secondary btn-sm">View Info</a>
+                    <a href="{{ url_for('preprocessing_inputs', filename=filename) }}" class="btn btn-secondary btn-sm">Preprocess</a>
+                    <a href="{{ url_for('ml_pipeline_route', filename=filename) }}" class="btn btn-secondary btn-sm">ML Pipeline</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 
-<form action="{{ url_for('info_layer') }}" method="GET">
-    <input type="hidden" name="filename" value="{{ selected_filename }}">
-    <button type="submit">Next Page</button>
-</form>
-{% endif %}
+    <!-- Selected Dataset Preview -->
+    {% if selected_filename and preview_data %}
+    <section class="section preview-section">
+        <div class="flex justify-between items-center">
+            <p class="section-label" style="margin-bottom: 0;">Dataset Preview</p>
+            <span class="filename-badge">{{ selected_filename }}</span>
+        </div>
+        
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>{% for col in columns %}<th>{{ col }}</th>{% endfor %}</tr>
+                </thead>
+                <tbody>
+                    {% for row in preview_data %}
+                    <tr>{% for col in columns %}<td>{{ row[col] }}</td>{% endfor %}</tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
+        <div class="form-footer" style="border: none; padding-top: 0; margin-top: var(--space-8);">
+            <a href="{{ url_for('info_layer', filename=selected_filename) }}" class="btn btn-primary">Analyze Dataset →</a>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
 </body>
 </html>

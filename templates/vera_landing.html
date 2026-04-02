@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vera — From raw data to model-ready insights</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vera_landing.css') }}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="landing-sidebar" id="sidebar">
+    <div class="landing-sidebar-header">
+        <div class="landing-sidebar-logo">
+            <span>✨</span>Vera
+        </div>
+    </div>
+
+    <ul class="landing-nav">
+        <li><a href="#problem" class="nav-link active" onclick="setActive(this)">Problem</a></li>
+        <li><a href="#solution" class="nav-link" onclick="setActive(this)">Solution</a></li>
+        <li><a href="{{ url_for('index') }}" class="nav-link" onclick="handleUpload(event)">Upload</a></li>
+    </ul>
+
+    <div class="landing-divider"></div>
+
+    <div class="landing-sidebar-footer">
+        <p>Transform raw data into model-ready insights automatically.</p>
+    </div>
+</aside>
+
+<!-- HAMBURGER -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- MAIN -->
+<main class="landing-main">
+    <!-- HERO -->
+    <div class="landing-hero">
+        <div class="landing-hero-content">
+            <h1>Vera</h1>
+            <p class="landing-tagline">From raw data to model-ready insights — without writing a line of code.</p>
+            <p class="landing-description">Upload your dataset. Vera handles the rest — analysis, insights, and machine learning.</p>
+            <div class="landing-cta">
+                <a href="{{ url_for('index') }}" class="landing-btn">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTIONS -->
+    <div class="landing-sections">
+        <!-- PROBLEM -->
+        <section class="landing-section" id="problem">
+            <h2>The Problem</h2>
+            <div class="problem-items">
+                <div class="problem-item">
+                    <p>Data analysts and small teams spend 60–70% of their time on repetitive, low-value tasks — cleaning messy datasets, writing preprocessing code, comparing models, and interpreting charts manually.</p>
+                </div>
+                <div class="problem-item">
+                    <p>Most tools either require coding expertise or enforce rigid workflows, creating a gap between raw data and usable insights.</p>
+                </div>
+                <div class="problem-item">
+                    <p>For non-specialists, this gap is even larger — limiting their ability to extract value from data despite having domain knowledge.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SOLUTION -->
+        <section class="landing-section" id="solution">
+            <h2>The Solution</h2>
+            <p class="solution-intro">Vera is an end-to-end platform that automates the entire data intelligence workflow — from raw CSV to production-ready insights and trained models.</p>
+            
+            <div class="solution-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>AI Dataset Understanding</h3>
+                    <p>Automatic summaries, quality flags, and column-level insights powered by LLM analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🧹</span>
+                    <h3>Guided Preprocessing</h3>
+                    <p>AI-suggested data cleaning strategies for missing values, outliers, and encoding decisions.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📈</span>
+                    <h3>Automated EDA</h3>
+                    <p>Univariate, bivariate, and trivariate visualizations with on-demand AI explanations.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🤖</span>
+                    <h3>ML Pipeline Automation</h3>
+                    <p>Train 9 model families in parallel — from Logistic Regression to XGBoost and LightGBM.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎯</span>
+                    <h3>Model Insights</h3>
+                    <p>Rankings, feature importance, confusion matrices, and performance metrics at a glance.</p>
+                </div>
+            </div>
+
+            <div class="solution-closing">
+                Vera removes the friction between data and decisions — so you can focus on insights, not implementation.
+            </div>
+        </section>
+    </div>
+</main>
+
+<script>
+    function setActive(element) {
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => link.classList.remove('active'));
+        element.classList.add('active');
+
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.getElementById('hamburger');
+        if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+    }
+
+    function handleUpload(e) {
+        e.preventDefault();
+        window.location.href = '/upload';
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.getElementById('hamburger');
+        sidebar.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    }
+
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const hamburger = document.getElementById('hamburger');
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                hamburger.classList.remove('active');
+            }
+        }
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (scrollY >= sectionTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

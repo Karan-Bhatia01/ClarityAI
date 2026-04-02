@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Pipeline — {{ filename }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+</head>
+<body>
+<header class="page-header">
+    <h1>🤖 ML Pipeline</h1>
+    <span class="filename-badge">{{ filename }}</span>
+</header>
+<div class="page-body">
+    <section class="section animate-in">
+        <p class="section-label">🎯 Select Target Column</p>
+        <p class="hint-text">
+            The LLM will automatically decide feature engineering, encoding,
+            model selection, and evaluation. Just pick your target
+        </p>
+        <form method="POST" action="{{ url_for('ml_pipeline_route', filename=filename) }}">
+            <div class="field-row">
+                <label for="target-select">Target Column for Prediction</label>
+                <select id="target-select" name="target_column" class="select-input" required>
+                    <option value="">— Select target column —</option>
+                    {% for col in columns %}
+                        <option value="{{ col }}">{{ col }}</option>
+                    {% endfor %}
+                </select>
+                <p class="hint-text" style="margin-top: var(--space-2); font-size: var(--font-size-sm);">This column will be used as the target variable for model training</p>
+            </div>
+            <div class="form-footer" style="border: none; margin-top: var(--space-8);">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Run ML Pipeline →
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
+</body>
+</html>

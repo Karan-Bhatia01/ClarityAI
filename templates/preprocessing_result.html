@@ -4,104 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDA Report — {{ filename }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/preprocessing_result.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
 </head>
 <body>
 
 <header class="page-header">
-    <h1>EDA Report</h1>
-    <span class="filename-badge">{{ filename }}</span>
-    <span class="shape-badge">{{ shape[0] }} rows × {{ shape[1] }} cols</span>
+    <h1>📊 EDA Report</h1>
+    <div class="meta">
+        <span class="filename-badge">{{ filename }}</span>
+        <span class="shape-badge">{{ shape[0] }} rows × {{ shape[1] }} cols</span>
+    </div>
 </header>
 
 <div class="page-body">
 
-    <!-- ── Data Preview ──────────────────────────────────────────────────── -->
-    <section class="section" id="preview">
-        <p class="section-label">Cleaned Data Preview</p>
+    <!-- Data Preview -->
+    <section class="section preview-section animate-in">
+        <p class="section-label">✓ Cleaned Data Preview</p>
         <div class="tbl-wrap">
             <table>
                 <thead>
-                    <tr>
-                        {% for col in columns %}
-                            <th>{{ col }}</th>
-                        {% endfor %}
-                    </tr>
+                    <tr>{% for col in columns %}<th>{{ col }}</th>{% endfor %}</tr>
                 </thead>
                 <tbody>
                     {% for row in preview_data %}
-                    <tr>
-                        {% for col in columns %}
-                            <td>{{ row[col] }}</td>
-                        {% endfor %}
-                    </tr>
+                    <tr>{% for col in columns %}<td>{{ row[col] }}</td>{% endfor %}</tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </section>
 
-    <!-- ── EDA Charts ────────────────────────────────────────────────────── -->
-    <section class="section" id="charts">
-        <p class="section-label">Charts &amp; AI Analysis</p>
+    <!-- EDA Charts -->
+    <section class="section animate-in">
+        <p class="section-label">📈 Data Visualizations &amp; AI Insights</p>
 
         <div class="chart-grid">
-            {% for title, data in eda_report.items() %}
-            <div class="chart-card">
+            {% for title, image_b64 in eda_report.items() %}
+            <div class="chart-card" id="card-{{ loop.index }}">
 
-                <!-- Chart title -->
                 <div class="chart-card__title">{{ title }}</div>
 
-                <!-- Chart image -->
                 <div class="chart-card__img-wrap">
                     <img
-                        src="data:image/png;base64,{{ data['image_b64'] }}"
+                        src="data:image/png;base64,{{ image_b64 }}"
                         alt="{{ title }}"
                         loading="lazy"
                     >
                 </div>
 
-                <!-- AI Analysis -->
-                <div class="chart-card__analysis">
-                    <div class="analysis-represents">
-                        {{ data['analysis'].get('represents', '') }}
-                    </div>
+                <!-- AI Insights button -->
+                <div class="chart-card__footer">
+                    <button
+                        class="btn-ai-insights"
+                        onclick="requestInsights(this, '{{ title }}', '{{ image_b64 }}')"
+                    >
+                        ✦ AI Insights
+                    </button>
+                </div>
 
-                    {% set findings = data['analysis'].get('key_findings', []) %}
-                    {% if findings %}
-                    <div class="analysis-block">
-                        <span class="analysis-block__label">Key Findings</span>
-                        <ul>
-                            {% for f in findings %}
-                                <li>{{ f }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    {% set anomalies = data['analysis'].get('anomalies', []) %}
-                    {% if anomalies %}
-                    <div class="analysis-block analysis-block--warn">
-                        <span class="analysis-block__label">Anomalies</span>
-                        <ul>
-                            {% for a in anomalies %}
-                                <li>{{ a }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-
-                    {% set recs = data['analysis'].get('recommendations', []) %}
-                    {% if recs %}
-                    <div class="analysis-block analysis-block--action">
-                        <span class="analysis-block__label">Recommendations</span>
-                        <ul>
-                            {% for r in recs %}
-                                <li>{{ r }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
+                <!-- Analysis panel — hidden until button clicked -->
+                <div class="chart-card__analysis" id="analysis-{{ loop.index }}" style="display:none;">
                 </div>
 
             </div>
@@ -110,6 +75,78 @@
     </section>
 
 </div>
+
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
+<script>
+async function requestInsights(btn, title, image_b64) {
+    const cardEl    = btn.closest(".chart-card");
+    const panelEl   = cardEl.querySelector(".chart-card__analysis");
+
+    // Prevent double-click
+    btn.disabled = true;
+    btn.textContent = "Analysing…";
+
+    try {
+        const resp = await fetch("/analyse_chart", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ image_b64, chart_title: title }),
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        panelEl.innerHTML = buildAnalysisHTML(data);
+        panelEl.style.display = "block";
+
+        btn.textContent = "✦ Analysed";
+        btn.classList.add("btn-ai-insights--done");
+
+    } catch (err) {
+        btn.textContent = "✦ Retry";
+        btn.disabled = false;
+        panelEl.innerHTML = `<p style="color: var(--fg-secondary);">Failed: ${err.message}</p>`;
+        panelEl.style.display = "block";
+    }
+}
+
+function buildAnalysisHTML(data) {
+    let html = "";
+
+    if (data.represents) {
+        html += `<p style="color: var(--fg-primary); font-weight: 500; margin: var(--space-2) 0;">${data.represents}</p>`;
+    }
+
+    if (data.key_findings && data.key_findings.length) {
+        html += `<div style="margin-top: var(--space-4);">
+            <strong style="color: var(--accent-primary);">Key Findings</strong>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-6); color: var(--fg-secondary);">
+                ${data.key_findings.map(f => `<li style="margin-bottom: var(--space-1);">${f}</li>`).join("")}
+            </ul>
+        </div>`;
+    }
+
+    if (data.anomalies && data.anomalies.length) {
+        html += `<div style="margin-top: var(--space-4);">
+            <strong style="color: var(--accent-warning);">⚠ Anomalies</strong>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-6); color: var(--fg-secondary);">
+                ${data.anomalies.map(a => `<li style="margin-bottom: var(--space-1);">${a}</li>`).join("")}
+            </ul>
+        </div>`;
+    }
+
+    if (data.recommendations && data.recommendations.length) {
+        html += `<div style="margin-top: var(--space-4);">
+            <strong style="color: var(--accent-success);">→ Recommendations</strong>
+            <ul style="margin: var(--space-2) 0; padding-left: var(--space-6); color: var(--fg-secondary);">
+                ${data.recommendations.map(r => `<li style="margin-bottom: var(--space-1);">${r}</li>`).join("")}
+            </ul>
+        </div>`;
+    }
+
+    return html || "<p style='color: var(--fg-secondary);'>No detailed insights returned.</p>";
+}
+</script>
 
 </body>
 </html>

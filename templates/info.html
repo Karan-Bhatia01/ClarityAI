@@ -3,40 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dataset Information</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/info.css') }}">
+    <title>Dataset Information — ClarityAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
 </head>
 <body>
 
-    <div class="page-top">
-        <h1>Dataset Overview</h1>
-        <a class="btn-eda" href="{{ url_for('preprocessing_inputs', filename=request.args.get('filename')) }}">
-            Run EDA &amp; Preprocessing →
+<header class="page-header">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1>📋 Dataset Overview</h1>
+            <span class="shape-badge">{{ analysis.shape[0] }} rows × {{ analysis.shape[1] }} columns</span>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('preprocessing_inputs', filename=request.args.get('filename')) }}">
+            Preprocess &amp; EDA →
         </a>
     </div>
+</header>
 
-    <!-- ================= AI INSIGHTS ================= -->
-    <section class="ai-section">
+<div class="page-body">
+
+    <!-- AI INSIGHTS SECTION -->
+    <section class="section animate-in">
+        <p class="section-label">🤖 AI-Powered Analysis</p>
 
         <!-- Summary -->
-        <div class="ai-summary">
-            <div class="ai-summary__label">AI Summary</div>
-            <p class="ai-summary__text">{{ ai_insights.summary }}</p>
+        <div class="insights-panel">
+            <h3>Summary</h3>
+            <p>{{ ai_insights.summary }}</p>
         </div>
 
         <!-- Quality Flags -->
         {% if ai_insights.quality_flags %}
-        <div class="ai-block">
-            <h2 class="ai-block__title">Quality Flags</h2>
-            <div class="flags-grid">
+        <div style="margin-top: var(--space-8);">
+            <h3 style="color: var(--accent-warning); margin-bottom: var(--space-4);">⚠ Quality Flags</h3>
+            <div style="display: grid; gap: var(--space-4);">
                 {% for flag in ai_insights.quality_flags %}
-                <div class="flag flag--{{ flag.severity }}">
-                    <div class="flag__header">
-                        <span class="flag__severity flag__severity--{{ flag.severity }}">{{ flag.severity }}</span>
-                        <span class="flag__column">{{ flag.column }}</span>
+                <div class="card" style="border-left: 3px solid var(--accent-warning);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <strong>{{ flag.column }}</strong>
+                            <span class="badge badge-warning" style="margin-left: var(--space-2);">{{ flag.severity }}</span>
+                        </div>
                     </div>
-                    <div class="flag__issue">{{ flag.issue }}</div>
-                    <div class="flag__detail">{{ flag.detail }}</div>
+                    <p style="margin-top: var(--space-2); color: var(--fg-secondary);">{{ flag.issue }}</p>
+                    <p style="font-size: var(--font-size-sm); color: var(--fg-tertiary);">{{ flag.detail }}</p>
                 </div>
                 {% endfor %}
             </div>
@@ -45,13 +57,13 @@
 
         <!-- Column Insights -->
         {% if ai_insights.column_insights %}
-        <div class="ai-block">
-            <h2 class="ai-block__title">Column Insights</h2>
-            <div class="insights-list">
+        <div style="margin-top: var(--space-8);">
+            <h3 style="color: var(--accent-primary); margin-bottom: var(--space-4);">✨ Column Insights</h3>
+            <div style="display: grid; gap: var(--space-3);">
                 {% for item in ai_insights.column_insights %}
-                <div class="insight-row">
-                    <span class="insight-row__col">{{ item.column }}</span>
-                    <span class="insight-row__text">{{ item.insight }}</span>
+                <div style="padding: var(--space-4); background-color: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 3px solid var(--accent-secondary);">
+                    <strong style="color: var(--accent-secondary);">{{ item.column }}</strong>
+                    <p style="margin: var(--space-2) 0 0 0; color: var(--fg-secondary);">{{ item.insight }}</p>
                 </div>
                 {% endfor %}
             </div>
@@ -60,13 +72,13 @@
 
         <!-- Next Steps -->
         {% if ai_insights.next_steps %}
-        <div class="ai-block">
-            <h2 class="ai-block__title">Recommended Next Steps</h2>
-            <ol class="steps-list">
+        <div style="margin-top: var(--space-8);">
+            <h3 style="color: var(--accent-success); margin-bottom: var(--space-4);">→ Recommended Next Steps</h3>
+            <ol style="list-style: none; padding: 0; display: grid; gap: var(--space-3);">
                 {% for step in ai_insights.next_steps %}
-                <li class="step">
-                    <span class="step__title">{{ step.title }}</span>
-                    <span class="step__detail">{{ step.detail }}</span>
+                <li style="padding: var(--space-4); background-color: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 3px solid var(--accent-success);">
+                    <strong style="color: var(--accent-success);">{{ step.title }}</strong>
+                    <p style="margin: var(--space-2) 0 0 0; color: var(--fg-secondary); font-size: var(--font-size-sm);">{{ step.detail }}</p>
                 </li>
                 {% endfor %}
             </ol>
@@ -75,133 +87,172 @@
 
         <!-- Uncertainty Notes -->
         {% if ai_insights.uncertainty_notes %}
-        <div class="ai-block ai-block--muted">
-            <h2 class="ai-block__title">Uncertainty & Limitations</h2>
-            <p class="uncertainty-text">{{ ai_insights.uncertainty_notes }}</p>
+        <div style="margin-top: var(--space-8); padding: var(--space-4); background-color: rgba(159, 18, 57, 0.05); border: 1px solid var(--border-color); border-radius: var(--radius-lg);">
+            <h3 style="font-size: var(--font-size-lg); color: var(--fg-secondary); margin-top: 0;">ℹ Uncertainties &amp; Limitations</h3>
+            <p style="font-size: var(--font-size-sm); color: var(--fg-tertiary);">{{ ai_insights.uncertainty_notes }}</p>
         </div>
         {% endif %}
-
     </section>
 
-    <!-- ================= SHAPE ================= -->
-    <h2>Shape</h2>
-    <p>
-        Rows: <strong>{{ analysis.shape[0] }}</strong> &nbsp;|&nbsp;
-        Columns: <strong>{{ analysis.shape[1] }}</strong> &nbsp;|&nbsp;
-        Memory: <strong>{{ analysis.memory_usage_mb }} MB</strong>
-    </p>
-
-    <!-- ================= COLUMNS ================= -->
-    <h2>Columns</h2>
-    {% if analysis.numeric_columns %}
-    <p class="col-label">Numeric</p>
-    <ul>
-        {% for col in analysis.numeric_columns %}
-            <li class="tag tag--numeric">{{ col }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% if analysis.categorical_columns %}
-    <p class="col-label">Categorical</p>
-    <ul>
-        {% for col in analysis.categorical_columns %}
-            <li class="tag tag--category">{{ col }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-
-    <!-- ================= NULL VALUES ================= -->
-    <h2>Null Values</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Column</th>
-                <th>Null Count</th>
-                <th>% Missing</th>
-                <th>Distribution</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for col, count in analysis.null_values.items() %}
-            <tr>
-                <td>{{ col }}</td>
-                <td>
-                    {% if count == 0 %}
-                        <span class="badge-ok">0</span>
-                    {% else %}
-                        <span class="badge-warn">{{ count }}</span>
-                    {% endif %}
-                </td>
-                <td>{{ analysis.null_percentages[col] }}%</td>
-                <td>
-                    {% if count > 0 %}
-                    <div class="null-bar">
-                        <div class="null-bar__fill" style="width: {{ analysis.null_percentages[col] }}%"></div>
-                    </div>
-                    {% else %}
-                        <span class="dash">—</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- ================= DUPLICATES ================= -->
-    <h2>Duplicate Rows</h2>
-    {% if analysis.duplicate_rows > 0 %}
-        <p class="dup-warn">⚠ {{ analysis.duplicate_rows }} duplicate rows detected</p>
-    {% else %}
-        <p class="dup-ok">✓ No duplicate rows found</p>
-    {% endif %}
-
-    <!-- ================= UNIQUE VALUES ================= -->
-    <h2>Unique Values (Preview)</h2>
-    <div class="unique-grid">
-        {% for col, meta in unique.items() %}
-        <div class="unique-card">
-            <div class="unique-card__header">
-                <span class="unique-card__col">{{ col }}</span>
-                <span class="unique-card__count">{{ meta['total_unique'] }} unique</span>
+    <!-- DATA STATISTICS -->
+    <section class="section animate-in">
+        <p class="section-label">📊 Data Statistics</p>
+        
+        <div class="results-grid">
+            <div class="result-card">
+                <h4>Memory Usage</h4>
+                <p class="result-metric-value">{{ analysis.memory_usage_mb }} MB</p>
             </div>
-            <ul class="unique-card__pills">
-                {% for val in meta['values'] %}
-                    <li>{{ val }}</li>
-                {% endfor %}
-            </ul>
-            {% if meta['truncated'] %}
-                <small>Showing 10 of {{ meta['total_unique'] }} values</small>
-            {% endif %}
+            <div class="result-card">
+                <h4>Total Rows</h4>
+                <p class="result-metric-value">{{ analysis.shape[0] }}</p>
+            </div>
+            <div class="result-card">
+                <h4>Total Columns</h4>
+                <p class="result-metric-value">{{ analysis.shape[1] }}</p>
+            </div>
         </div>
-        {% endfor %}
-    </div>
+    </section>
 
-    <!-- ================= DESCRIBE ================= -->
-    <h2>Descriptive Statistics</h2>
-    {% for col, stats in analysis.describe.items() %}
-    <details class="describe-block">
-        <summary>{{ col }}</summary>
-        <table>
-            <thead>
-                <tr><th>Statistic</th><th>Value</th></tr>
-            </thead>
-            <tbody>
-                {% for stat, value in stats.items() %}
-                <tr>
-                    <td>{{ stat }}</td>
-                    <td>
-                        {% if value is not none %}
-                            {{ "%.4g" | format(value) if value is number else value }}
-                        {% else %}
-                            <span class="dash">—</span>
-                        {% endif %}
-                    </td>
-                </tr>
+    <!-- COLUMNS BREAKDOWN -->
+    <section class="section animate-in">
+        <p class="section-label">🏷 Column Types</p>
+        
+        {% if analysis.numeric_columns %}
+        <div style="margin-bottom: var(--space-6);">
+            <h3 style="font-size: var(--font-size-lg); color: var(--fg-primary); margin-bottom: var(--space-3);">Numeric Columns</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                {% for col in analysis.numeric_columns %}
+                    <span class="badge" style="background-color: var(--accent-secondary);">{{ col }}</span>
                 {% endfor %}
-            </tbody>
-        </table>
-    </details>
-    {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if analysis.categorical_columns %}
+        <div>
+            <h3 style="font-size: var(--font-size-lg); color: var(--fg-primary); margin-bottom: var(--space-3);">Categorical Columns</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                {% for col in analysis.categorical_columns %}
+                    <span class="badge badge-secondary">{{ col }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
 
+    <!-- NULL VALUES TABLE -->
+    <section class="section animate-in">
+        <p class="section-label">⚠ Missing Values</p>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Null Count</th>
+                        <th>% Missing</th>
+                        <th>Distribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, count in analysis.null_values.items() %}
+                    <tr>
+                        <td><strong>{{ col }}</strong></td>
+                        <td>
+                            {% if count == 0 %}
+                                <span class="badge badge-success">0</span>
+                            {% else %}
+                                <span class="badge badge-warning">{{ count }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ analysis.null_percentages[col]}}%</td>
+                        <td>
+                            {% if count > 0 %}
+                            <div style="width: 100%; height: 8px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                                <div style="height: 100%; width: {{ analysis.null_percentages[col] }}%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));"></div>
+                            </div>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- DUPLICATES -->
+    <section class="section animate-in">
+        <p class="section-label">🔄 Data Quality</p>
+        {% if analysis.duplicate_rows > 0 %}
+            <div style="padding: var(--space-4); background-color: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-warning); border-radius: var(--radius-lg); color: var(--accent-warning);">
+                ⚠ <strong>{{ analysis.duplicate_rows }} duplicate rows</strong> detected in dataset
+            </div>
+        {% else %}
+            <div style="padding: var(--space-4); background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-success); border-radius: var(--radius-lg); color: var(--accent-success);">
+                ✓ No duplicate rows found
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- UNIQUE VALUES PREVIEW -->
+    <section class="section animate-in">
+        <p class="section-label">🎯 Unique Values Preview</p>
+        <div class="card-grid">
+            {% for col, meta in unique.items() %}
+            <div class="card">
+                <h4>{{ col }}</h4>
+                <p style="color: var(--fg-tertiary); font-size: var(--font-size-sm); margin-bottom: var(--space-3);">{{ meta['total_unique'] }} unique values</p>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    {% for val in meta['values'] %}
+                        <span class="badge badge-secondary" style="font-size: var(--font-size-xs);">{{ val }}</span>
+                    {% endfor %}
+                </div>
+                {% if meta['truncated'] %}
+                    <p style="font-size: var(--font-size-xs); color: var(--fg-muted); margin-top: var(--space-2);">+{{ meta['total_unique'] - 10 }} more values</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- DESCRIPTIVE STATISTICS -->
+    <section class="section animate-in">
+        <p class="section-label">📈 Descriptive Statistics</p>
+        <div style="display: grid; gap: var(--space-4);">
+            {% for col, stats in analysis.describe.items() %}
+            <div style="border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-4); background-color: var(--bg-tertiary);">
+                <h4 style="margin-top: 0; color: var(--accent-primary);">{{ col }}</h4>
+                <div class="tbl-wrap" style="margin-top: var(--space-3);">
+                    <table>
+                        <thead>
+                            <tr><th>Statistic</th><th>Value</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for stat, value in stats.items() %}
+                            <tr>
+                                <td style="font-weight: 500;">{{ stat }}</td>
+                                <td>
+                                    {% if value is not none %}
+                                        <code style="background-color: var(--bg-secondary); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); font-size: var(--font-size-xs);">{{ "%.6g" | format(value) if value is number else value }}</code>
+                                    {% else %}
+                                        <span style="color: var(--fg-muted);">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
 </body>
 </html>

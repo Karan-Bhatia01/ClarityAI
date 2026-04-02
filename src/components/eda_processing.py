@@ -5,7 +5,6 @@ import sys
 import json
 import textwrap
 from typing import Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 import pandas as pd
@@ -32,12 +31,10 @@ load_dotenv()
 
 sns.set_theme(style="whitegrid", palette="muted", font_scale=1.1)
 
-_OXLO_API_URL   = "https://api.oxlo.ai/v1/chat/completions"
-_OXLO_API_KEY   = os.getenv("OXLO_API_KEY", "")
-_OXLO_MODEL     = "mistral-7b"
-_AI_CHART_LIMIT = 999  # analyse all charts
-_CHART_DPI      = 72
-_MAX_WORKERS    = 1  
+_OXLO_API_URL = "https://api.oxlo.ai/v1/chat/completions"
+_OXLO_API_KEY = os.getenv("OXLO_API_KEY", "")
+_OXLO_MODEL   = "mistral-7b"
+_CHART_DPI    = 72
 
 
 class DataPreprocessing:
@@ -48,7 +45,9 @@ class DataPreprocessing:
     --------
     1. get_ai_insights()          → {col: method} — skips LLM if no nulls
     2. preprocess_data(strategy)  → cleaned DataFrame (in-memory only)
-    3. generate_eda_report(df)    → {chart_title: {image_b64, analysis}}
+    3. generate_eda_report(df)    → {chart_title: image_b64}
+                                    No AI calls here — done on-demand via /analyse_chart
+    4. analyse_single(b64, title) → AI analysis dict for one chart
     """
 
     def __init__(
@@ -74,19 +73,14 @@ class DataPreprocessing:
         except Exception as e:
             raise CustomException(e, sys) from e
 
-    # helpers 
+    # ── helpers ───────────────────────────────────────────────────────────────
     def _valid_hue(self, df: pd.DataFrame) -> str | None:
-        """Return target_column only if it is a non-empty string column in df."""
         tc = self.target_column
-        if (
-            isinstance(tc, str)
-            and tc.strip()
-            and tc in df.columns.tolist()
-        ):
+        if isinstance(tc, str) and tc.strip() and tc in df.columns.tolist():
             return tc
         return None
 
-    # AI missing-value strategy 
+    # ── 1. AI missing-value strategy ──────────────────────────────────────────
     def get_ai_insights(self) -> dict[str, str]:
         try:
             df = self.df
@@ -99,30 +93,19 @@ class DataPreprocessing:
 
             analysis = {
                 "shape":               df.shape,
-                "columns":             df.columns.tolist(),
                 "null_values":         cols_with_nulls,
-                "duplicate_rows":      int(df.duplicated().sum()),
-                "numeric_columns":     df.select_dtypes(include="number").columns.tolist(),
-                "categorical_columns": df.select_dtypes(exclude="number").columns.tolist(),
             }
 
             prompt = textwrap.dedent("""
-                Analyse the dataset summary below.
-                For ONLY the columns listed in null_values, suggest the single best method
-                to fill missing values.
-
+                Given the null_values dict, suggest the SINGLE best method to fill each column.
                 Valid methods: mean, median, mode, ffill, bfill, zero, drop
 
-                Return ONLY valid JSON — no explanation, no markdown fences.
-                Format:
-                {
-                  "column_name": "method",
-                  ...
-                }
+                Return ONLY JSON (no explanation):
+                {"column_name": "method", ...}
             """).strip()
 
-            llm_result   = llm_agent(prompt=prompt, role="Senior Data Analyst",
-                                     context=json.dumps(analysis, indent=2))
+            llm_result   = llm_agent(prompt=prompt, role="Data Analyst",
+                                     context=json.dumps(analysis, separators=(',', ':')))
             raw_response = llm_result.get("response", "")
 
             if isinstance(raw_response, dict):
@@ -136,7 +119,7 @@ class DataPreprocessing:
         except Exception as e:
             raise CustomException(e, sys) from e
 
-    # Preprocessing 
+    # ── 2. Preprocessing ──────────────────────────────────────────────────────
     def preprocess_data(
         self,
         missing_value_strategy: dict[str, str] | None = None,
@@ -193,61 +176,48 @@ class DataPreprocessing:
         except Exception as e:
             raise CustomException(e, sys) from e
 
-    # EDA report 
-    def generate_eda_report(self, df: pd.DataFrame) -> dict[str, dict[str, Any]]:
+    # ── 3. EDA report — charts only, no AI calls ───────────────────────────────
+    def generate_eda_report(self, df: pd.DataFrame) -> dict[str, str]:
+        """
+        Build all charts and return {title: image_b64}.
+        AI analysis is NOT done here — it happens on-demand via /analyse_chart.
+        Page loads instantly.
+        """
         try:
-            charts: dict[str, str] = self._build_all_charts(df)
-            logging.info("Built %d charts.", len(charts))
-
-            titles = list(charts.keys())
-            ai_set = set(titles[:_AI_CHART_LIMIT])
-
-            # Free plan = 1 concurrent request only — send sequentially with delay
-            import time
-            analyses: dict[str, dict] = {}
-            ai_titles = [t for t in titles if t in ai_set]
-            for i, t in enumerate(ai_titles):
-                try:
-                    analyses[t] = analyse_chart(
-                        charts[t], t,
-                        self._oxlo_key, _OXLO_API_URL, _OXLO_MODEL,
-                    )
-                    logging.info("Analysed chart %d/%d: '%s'", i + 1, len(ai_titles), t)
-                except Exception as exc:
-                    logging.warning("Analysis failed for '%s': %s", t, exc)
-                    analyses[t] = empty_analysis(t)
-                # Respect rate limit — wait between requests
-                if i < len(ai_titles) - 1:
-                    time.sleep(6)  # free plan: wait > retry_after=5s
-
-            report: dict[str, dict[str, Any]] = {
-                title: {
-                    "image_b64": charts[title],
-                    "analysis":  analyses.get(title, empty_analysis(title)),
-                }
-                for title in titles
-            }
-
-            logging.info("EDA report complete — %d charts, %d AI-analysed.",
-                         len(report), len(ai_set))
-            return report
-
+            charts = self._build_all_charts(df)
+            if charts is None:
+                logging.warning("_build_all_charts returned None — using empty dict.")
+                charts = {}
+            logging.info("EDA report built — %d charts (no AI calls).", len(charts))
+            return charts
         except Exception as e:
             raise CustomException(e, sys) from e
 
-    # Chart builder 
+    # ── 4. Analyse a single chart on demand ────────────────────────────────────
+    def analyse_single(self, image_b64: str, chart_title: str) -> dict[str, Any]:
+        """Called by /analyse_chart route for one chart at a time."""
+        try:
+            result = analyse_chart(
+                image_b64, chart_title,
+                self._oxlo_key, _OXLO_API_URL, _OXLO_MODEL,
+            )
+            logging.info("On-demand analysis done for '%s'.", chart_title)
+            return result
+        except Exception as e:
+            logging.warning("On-demand analysis failed for '%s': %s", chart_title, e)
+            return empty_analysis(chart_title)
+
+    # ── Chart builder ──────────────────────────────────────────────────────────
     def _build_all_charts(self, df: pd.DataFrame) -> dict[str, str]:
-        """
-        Render every chart to base64. Pure CPU — no network calls.
-        Every chart is wrapped in try/except so one failure never kills the rest.
-        """
         charts: dict[str, str] = {}
+        try:
+            numeric_cols     = df.select_dtypes(include="number").columns.tolist()
+            categorical_cols = df.select_dtypes(exclude="number").columns.tolist()
+        except Exception as e:
+            logging.warning("Could not determine column types: %s", e)
+            return charts
 
-        # Work on a clean numeric-safe copy
-        numeric_cols     = df.select_dtypes(include="number").columns.tolist()
-        categorical_cols = df.select_dtypes(exclude="number").columns.tolist()
-
-        # Univariate 
+        # ── Univariate ─────────────────────────────────────────────────────
         for col in numeric_cols:
             try:
                 title = f"Distribution — {col}"
@@ -277,7 +247,8 @@ class DataPreprocessing:
                 title = f"Value Counts — {col}"
                 vc = df[col].value_counts().head(15)
                 fig, ax = plt.subplots(figsize=(8, 4))
-                sns.barplot(x=vc.index, y=vc.values, ax=ax, hue=vc.index, palette="muted", legend=False)
+                sns.barplot(x=vc.index, y=vc.values, ax=ax,
+                            hue=vc.index, palette="muted", legend=False)
                 ax.set_title(title); ax.set_xlabel(col); ax.set_ylabel("Count")
                 plt.xticks(rotation=35, ha="right"); plt.tight_layout()
                 charts[title] = fig_to_b64(fig, _CHART_DPI)
@@ -286,7 +257,7 @@ class DataPreprocessing:
             finally:
                 plt.close("all")
 
-        # Bivariate 
+        # ── Bivariate ──────────────────────────────────────────────────────
         if len(numeric_cols) >= 2:
             try:
                 title = "Correlation Heatmap"
@@ -330,7 +301,8 @@ class DataPreprocessing:
                 grp   = (df.groupby(cat_col)[num_col]
                            .mean().sort_values(ascending=False).head(12))
                 fig, ax = plt.subplots(figsize=(8, 4))
-                sns.barplot(x=grp.index, y=grp.values, ax=ax, hue=grp.index, palette="Blues_d", legend=False)
+                sns.barplot(x=grp.index, y=grp.values, ax=ax,
+                            hue=grp.index, palette="Blues_d", legend=False)
                 ax.set_title(title); ax.set_xlabel(cat_col)
                 ax.set_ylabel(f"Mean {num_col}")
                 plt.xticks(rotation=35, ha="right"); plt.tight_layout()
@@ -339,3 +311,39 @@ class DataPreprocessing:
                 logging.warning("Skipped grouped bar: %s", e)
             finally:
                 plt.close("all")
+
+        # ── Trivariate ─────────────────────────────────────────────────────
+        if len(numeric_cols) >= 3:
+            try:
+                title     = "Pairplot"
+                pair_cols = numeric_cols[:5]
+                plot_df   = df[pair_cols].select_dtypes(include="number").dropna()
+                if not plot_df.empty:
+                    pplot = sns.pairplot(plot_df, hue=None, diag_kind="kde",
+                                         plot_kws={"alpha": 0.5})
+                    pplot.fig.suptitle(title, y=1.02)
+                    charts[title] = fig_to_b64(pplot.fig, _CHART_DPI)
+            except Exception as e:
+                logging.warning("Skipped 'Pairplot': %s", e)
+            finally:
+                plt.close("all")
+
+        if len(numeric_cols) >= 3:
+            try:
+                col_x, col_y, col_s = numeric_cols[0], numeric_cols[1], numeric_cols[2]
+                title  = f"Bubble — {col_x} / {col_y} / {col_s}"
+                sizes  = pd.to_numeric(df[col_s], errors="coerce").fillna(0)
+                scaled = (sizes - sizes.min()) / (sizes.max() - sizes.min() + 1e-9) * 400 + 20
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sc = ax.scatter(df[col_x], df[col_y], s=scaled,
+                                alpha=0.5, c=scaled, cmap="viridis")
+                plt.colorbar(sc, ax=ax, label=col_s)
+                ax.set_xlabel(col_x); ax.set_ylabel(col_y); ax.set_title(title)
+                plt.tight_layout()
+                charts[title] = fig_to_b64(fig, _CHART_DPI)
+            except Exception as e:
+                logging.warning("Skipped bubble chart: %s", e)
+            finally:
+                plt.close("all")
+
+        return charts

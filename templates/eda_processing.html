@@ -4,59 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preprocessing — {{ filename }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/eda.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
 </head>
 <body>
 
 <header class="page-header">
-    <h1>Preprocessing</h1>
-    <span class="filename-badge">{{ filename }}</span>
-    <span class="shape-badge">{{ shape[0] }} rows × {{ shape[1] }} cols</span>
+    <h1>⚙️ Data Preprocessing</h1>
+    <div class="meta">
+        <span class="filename-badge">{{ filename }}</span>
+        <span class="shape-badge">{{ shape[0] }} rows × {{ shape[1] }} cols</span>
+    </div>
 </header>
 
 <div class="page-body">
 <form method="POST" action="{{ url_for('preprocessing_inputs', filename=filename) }}">
 
-    <!-- ── Target Column ──────────────────────────────────────────────────── -->
-    <section class="section">
-        <p class="section-label">Target Column</p>
+    <!-- Target Column -->
+    <section class="section animate-in">
+        <p class="section-label">🎯 Target Column</p>
+        <p class="hint-text">Select a column to use as target for visualization (optional)</p>
         <div class="field-row">
             <select name="target_column" class="select-input">
                 <option value="">— None / Unsupervised —</option>
                 {% for col in columns %}
-                    <option value="{{ col }}">{{ col }}</option>
+                    <option value="{{ col }}" {% if col == previous_target %}selected{% endif %}>{{ col }}</option>
                 {% endfor %}
             </select>
-            <span class="field-hint">Used to colour scatter and pairplot charts</span>
         </div>
     </section>
 
-    <!-- ── Drop Columns ───────────────────────────────────────────────────── -->
-    <section class="section">
-        <p class="section-label">Drop Columns</p>
+    <!-- Drop Columns -->
+    <section class="section animate-in">
+        <p class="section-label">❌ Column Removal</p>
+        <p class="hint-text">Select columns to remove before processing</p>
         <div class="checkbox-grid">
             {% for col in columns %}
             <label class="checkbox-item">
-                <input type="checkbox" name="columns_to_drop" value="{{ col }}">
+                <input type="checkbox" name="columns_to_drop" value="{{ col }}" {% if col in previous_columns_to_drop %}checked{% endif %}>
                 <span>{{ col }}</span>
             </label>
             {% endfor %}
         </div>
     </section>
 
-    <!-- ── Missing Value Strategy ──────────────────────────────────────────── -->
-    <section class="section">
+    <!-- Missing Value Strategy -->
+    <section class="section animate-in">
         <p class="section-label">
-            Missing Value Strategy
+            🔧 Missing Value Strategy
             {% if not has_nulls %}
                 <span class="no-nulls-badge">✓ No missing values</span>
             {% endif %}
         </p>
 
         {% if has_nulls %}
-        <p class="hint-text">
-            Dropdowns are pre-filled with AI suggestions. Override any column as needed.
-        </p>
+        <p class="hint-text">AI-suggested strategies pre-filled. Override as needed.</p>
         <div class="tbl-wrap">
             <table>
                 <thead>
@@ -71,13 +74,13 @@
                     {% for col, count in null_counts.items() %}
                     {% if count > 0 %}
                     <tr>
-                        <td>{{ col }}</td>
-                        <td><span class="badge-warn">{{ count }}</span></td>
+                        <td><strong>{{ col }}</strong></td>
+                        <td><span class="badge badge-warning">{{ count }}</span></td>
                         <td>
                             {% if col in ai_strategy %}
-                                <span class="ai-suggestion">{{ ai_strategy[col] }}</span>
+                                <code style="background-color: rgba(79, 70, 229, 0.1); color: var(--accent-primary);">{{ ai_strategy[col] }}</code>
                             {% else %}
-                                <span class="dash">—</span>
+                                <span style="color: var(--fg-muted);">—</span>
                             {% endif %}
                         </td>
                         <td>
@@ -85,7 +88,9 @@
                                 {% set methods = ['mean', 'median', 'mode', 'ffill', 'bfill', 'zero', 'drop'] %}
                                 {% for method in methods %}
                                     <option value="{{ method }}"
-                                        {{ 'selected' if ai_strategy.get(col) == method else '' }}>
+                                        {% if previous_missing_strategy.get(col) == method %}selected
+                                        {% elif ai_strategy.get(col) == method %}selected
+                                        {% endif %}>
                                         {{ method }}
                                     </option>
                                 {% endfor %}
@@ -98,19 +103,25 @@
             </table>
         </div>
         {% else %}
-        <p class="dup-ok">✓ Dataset has no missing values — this step will be skipped.</p>
+        <div style="padding: var(--space-4); background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-success); border-radius: var(--radius-lg); color: var(--accent-success);">
+            ✓ Dataset has no missing values — this step will be skipped.
+        </div>
         {% endif %}
     </section>
 
-    <!-- ── Submit ─────────────────────────────────────────────────────────── -->
+    <!-- Submit -->
     <div class="form-footer">
-        <button type="submit" class="btn-run">
-            Run Preprocessing &amp; Generate EDA →
+        <a class="btn btn-secondary" href="/ml?filename={{ filename }}">
+            Skip to ML →
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg">
+            Run Preprocessing &amp; EDA →
         </button>
     </div>
 
 </form>
 </div>
 
+<script src="{{ url_for('static', filename='js/modern-ui.js') }}"></script>
 </body>
 </html>

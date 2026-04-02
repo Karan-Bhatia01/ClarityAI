@@ -5,12 +5,13 @@ import json
 import re
 import base64
 import textwrap
+import time
 from typing import Any
 
 import pandas as pd
 import gridfs
 from pymongo import MongoClient
-from groq import Groq
+import openai
 
 from src.logger import logging
 from src.exception import CustomException
@@ -57,11 +58,12 @@ def load_dataframe_from_mongo(filename: str) -> pd.DataFrame:
         raise CustomException(e, sys)
 
 
-# ── LLM (Groq) ────────────────────────────────────────────────────────────────
+# ── LLM (OXLO) ────────────────────────────────────────────────────────────────
 
 def llm_agent(prompt: str, role: str, context: str) -> dict:
     """
-    Send a structured prompt to Groq and return the parsed JSON response.
+    Send a structured prompt to OXLO and return the parsed JSON response.
+    Includes retry logic with exponential backoff for rate limits (429).
 
     Returns
     -------
@@ -69,45 +71,77 @@ def llm_agent(prompt: str, role: str, context: str) -> dict:
         "response"  → the LLM's answer string
         "metadata"  → role, original_query, context_summary
     """
-    try:
-        client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-
-        structured_prompt = (
-            f"Act as {role} and respond only in JSON format.\n"
-            f"The context is: {context}\n"
-            f"The user query is: {prompt}\n\n"
-            "The JSON structure must always be:\n"
-            "{\n"
-            '    "response": "<your answer here>",\n'
-            '    "metadata": {\n'
-            '        "role": "<role>",\n'
-            '        "original_query": "<original user query>",\n'
-            '        "context_summary": "<short summary of context>"\n'
-            "    }\n"
-            "}"
-        )
-
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": structured_prompt}],
-            model="groq/compound",
-        )
-
-        raw_content = chat_completion.choices[0].message.content
-
+    max_retries = 5
+    retry_delay = 1  # Start with 1 second, exponential backoff: 1s, 2s, 4s, 8s
+    
+    for attempt in range(max_retries):
         try:
-            return json.loads(raw_content)
-        except json.JSONDecodeError:
-            return {
-                "response": raw_content,
-                "metadata": {
-                    "role": role,
-                    "original_query": prompt,
-                    "context_summary": context[:100],
-                }
-            }
+            client = openai.OpenAI(
+                base_url="https://api.oxlo.ai/v1",
+                api_key=os.environ.get("OXLO_API_KEY")
+            )
 
-    except Exception as e:
-        raise Exception(f"LLM Agent failed: {e}")
+            structured_prompt = (
+                f"Act as {role} and respond only in JSON format.\n"
+                f"The context is: {context}\n"
+                f"The user query is: {prompt}\n\n"
+                "The JSON structure must always be:\n"
+                "{\n"
+                '    "response": "<your answer here>",\n'
+                '    "metadata": {\n'
+                '        "role": "<role>",\n'
+                '        "original_query": "<original user query>",\n'
+                '        "context_summary": "<short summary of context>"\n'
+                "    }\n"
+                "}"
+            )
+
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": structured_prompt}],
+                model="llama-3.2-3b",
+                max_tokens=4096,
+                temperature=0.3,
+            )
+
+            raw_content = chat_completion.choices[0].message.content
+
+            try:
+                # Try to parse JSON response
+                parsed = json.loads(raw_content)
+                return parsed
+            except json.JSONDecodeError:
+                # If JSON parsing fails, try to extract valid JSON from the response
+                start_idx = raw_content.find('{')
+                end_idx = raw_content.rfind('}')
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    try:
+                        parsed = json.loads(raw_content[start_idx:end_idx+1])
+                        return parsed
+                    except json.JSONDecodeError:
+                        pass
+                
+                # If all JSON parsing fails, return wrapped response
+                return {
+                    "response": raw_content,
+                    "metadata": {
+                        "role": role,
+                        "original_query": prompt,
+                        "context_summary": context[:100],
+                    }
+                }
+
+        except openai.RateLimitError as e:
+            # Handle 429 rate limit error with exponential backoff
+            if attempt < max_retries - 1:
+                wait_time = retry_delay * (2 ** attempt)  # Exponential backoff: 1s, 2s, 4s
+                logging.warning(f"Rate limited (429). Retrying in {wait_time} seconds... (Attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait_time)
+                continue
+            else:
+                raise Exception(f"LLM Agent failed after {max_retries} retries: {e}")
+        
+        except Exception as e:
+            raise Exception(f"LLM Agent failed: {e}")
 
 
 # ── Chart utilities ────────────────────────────────────────────────────────────
@@ -176,7 +210,8 @@ def analyse_chart(
             )
             response = client.chat.completions.create(
                 model=oxlo_model,
-                max_tokens=512,
+                max_tokens=1024,
+                temperature=0.3,
                 messages=messages,
             )
             raw = response.choices[0].message.content.strip()
@@ -194,25 +229,46 @@ def analyse_chart(
 
 def parse_json_response(raw: str) -> dict:
     """
-    Parse JSON from an LLM response, stripping markdown fences if present.
-    Falls back to regex extraction, then empty dict.
+    Parse JSON from an LLM response with robust fallbacks.
+    Handles markdown fences, control characters, and malformed JSON.
     """
     raw = raw.strip()
+    
+    # Remove control characters
+    raw = raw.encode('utf-8', errors='ignore').decode('utf-8')
+    
+    # Strip markdown code blocks
     if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-        raw = raw.strip()
+        parts = raw.split("```")
+        raw = parts[1] if len(parts) > 1 else raw
+        if raw.strip().lower().startswith("json"):
+            raw = raw.strip()[4:]
+    
+    raw = raw.strip()
+    
+    # Try direct JSON parsing
     try:
         return json.loads(raw)
-    except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
+    except json.JSONDecodeError as e:
+        # Try to extract valid JSON substring
+        start_idx = raw.find('{')
+        end_idx = raw.rfind('}')
+        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+            try:
+                extracted = raw[start_idx:end_idx+1]
+                return json.loads(extracted)
+            except json.JSONDecodeError:
+                pass
+        
+        # Fallback: regex search for JSON object (non-greedy)
+        match = re.search(r'\{.*?\}', raw, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group())
             except json.JSONDecodeError:
                 pass
-        logging.warning("Could not parse JSON from response: %s", raw[:200])
+        
+        logging.warning("JSON parse failed at pos %d: %s. Response: %s", e.pos, e.msg, raw[:300])
         return {}
 
 
